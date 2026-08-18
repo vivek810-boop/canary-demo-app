@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary-demo-v1
+  namespace: canary-demo
+  labels:
+    app: canary-demo
+    version: v1
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: canary-demo
+      version: v1
+
+  template:
+    metadata:
+      labels:
+        app: canary-demo
+        version: v1
+
+    spec:
+      containers:
+        - name: canary-demo
+          image: 906876220591.dkr.ecr.ap-south-1.amazonaws.com/canary-repo:v1
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: APP_VERSION
+              value: "v1"
+
+            - name: ENVIRONMENT
+              value: "production"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+
+            initialDelaySeconds: 15
+            periodSeconds: 20
